@@ -1,0 +1,779 @@
+
+
+04.05.2022
+	Tutki buffereita, missä käytetään jne.
+	Tutki laskukaavaa, joka tulisi muuttaa C-kielelle
+	Tutki ohjelman toimintaa yleisellä tasolla
+	Jos jää aikaa tai tulee vastaan DHCP renew crash bug MBED
+	refactorointi
+	tilan riittävyys
+	
+	
+05.05.2022
+
+	STM32F429VIT6
+	
+	STM32F42xxx
+	
+	SRAM 256 (112 + 16 + 64 + 64) kB
+	64  kB [0x2002 0000] - [0x2002 FFFF]	SRAM3
+	16  kB [0x2001 C000] - [0x2001 FFFF]	SRAM2
+	112 kB [0x2000 0000] - [0x2001 BFFF]	SRAM1
+	
+	64  kB [0x1000 0000] - [0x1000 FFFF]    CCM (core coupled memory)
+	
+	 2  MB [0x0800 0000] - [0x081F FFFF] 	FLASH
+
+(25.07.2022)
+				
+	Bootloader  0x0800 0000 [2 0000] (131 072 B)	Sectors 0-4
+				-   01 FFFF
+	Header 		    02 0000 [   800] (  2 048 B)    Sectors 5
+				-   02 07FF
+	Application     02 0800 [7 F800] (522 240 B)    Sectors 5 - 8
+				-   09 FFFF
+	Header backup   0A 0000 [6 0000] (392 216 B)	Sectors 9 - 11
+				-   0F FFFF
+	System info     10 0000	[  4000] ( 16 384 B)    Sector  12
+				-   10 3FFF
+	Calibration     10 4000 [  4000} ( 16 384 B)    Sector  13
+				-	10 7FFF
+	Certificates    10 8000 [  4000] ( 16 384 B)    Sector  14
+				-   10 BFFF
+	Empty			10 C000 [1 4000] ( 81 920 B)	Sectors 15 - 16
+				-	11 FFFF
+	New Application 12 0000 [C 0000] (786 432 B)	Sectors 17 - 22
+				-   1D FFFF
+	Reboot reason   1E 0000 [2 0000] (131 072 B)	Sectors 23
+				-	1F FFFF
+		
+	Yhteensä:    [20 0000] (2 097 152 B)
+	
+	080e 0000
+	081E 0000
+	
+06.05.2022
+	software_control::shutdown(); called only from: void message_callbacks_ota(MQTT::MessageData &md){}
+		OTA?
+		
+	PS run Mosquitto:
+		.\mosquitto.exe -v
+		
+	savgol is onboard algorithm .. . 
+	
+11.05.2022
+
+C:\Program Files (x86)\GNU Tools ARM Embedded\6 2017-q2-update\bin\arm-none-eabi-gcc-6.3.1.exe
+
+${workspaceFolder}\BUILD\COLLOIDTEK\GCC_ARM\mbed_config.h
+
+16.05.2022
+	ColloidTekille implementoitu CP ja CIV -nimisten parametrien laskenta firmiksellä.
+	Targetille on implementoitu sgolay_3_27, fit_10_2 ja findmin. (Nimet eri)
+	Nyt implementoidaan parin uuden parametrin laskenta, joita varten tarvitaan sgolay_3_71 ja fit_40_2 (uudet funktiot).
+	Nimeäminen ollut inkonsistentti, kun sgolayssä on asteluku ensin ja ikkunapituus toisena, ja fiteissä toisinpäin. [korjaa tämä].
+	CSV-filut ovat asiakkaan testidataa, ja loadifilut lataavat niitä ja käsittelevät. 
+	Testauksesta ylipäänsä: CSV-filujen joukossa on siis myös asiakkaan referenssi-implementaatiolla laskettuja outputteja.
+	Referenssi on asiakkaan Pythonilla tekemä signaalinkäsittely.
+	Doubleilla laskien, ja Octavessa ajettuna, tämä yksinkertaistettu prosessointi antaa hyvin tarkkaan saman tuloksen kuin referenssi. [Double lienee pakollinen]
+	Oikeellisuus olisi kuitenkin hyvä vielä tarkistaa firmiksen sorsapuusta käännetyllä versiolla, kun saat hommaa implementoitua. [Unit test!]
+	Käsittääkseni niitä aiempia CP ja CIV parametreja varten jonkinlainen vastaava testaus on jo meneillään.
+
+	Minä olen varmasti oikea kontakti kysymyksiin siitä mitä tässä varsinaisesti tehdään.
+
+	Kysymyksiin siitä mitä firmiksen puolelle on jo implementoitu, ja millä tavoin, lienee Mikko kuitenkin oikea henkilö.
+
+17.05.2022
+	
+	if Calculate onboard
+		send
+			translate_data() // Magnitude and Phase are calculated to dB and angle
+			find_CP_CIV()
+				find_Peak_Mag_and_Freq();
+					sgolay_const_and_hessian();
+					filtered_data_find_near_peak();
+						filtered_data_max_hessian();
+					second_polynomial_fit();
+				find_3db_approx_right();
+				find_3db_approx_left();
+				first_polynomial_fit();
+				first_polynomial_fit();
+			find_PS();
+			find_PS();
+			put_data();
+					
+	Ensimmäinen magnitudi arvo vektorista aina virheellinen, Phase shift samoin
+	
+	CP permittivity
+	CP ion viscosity
+	
+	Modbus TCP?
+	Gateway = PC?
+	
+	ADCbugi - ref konkat???
+	
+18.05.2021
+| Module                   |         .text |    .data |          .bss |
+|--------------------------|---------------|----------|---------------|
+| [fill]                   |       331(-5) |   29(+4) |       91(-22) |
+| [lib]\c.a                |   30439(+940) | 2472(+0) |        89(+0) |
+| [lib]\gcc.a              |    3232(-160) |    0(+0) |         0(+0) |
+| [lib]\misc               |       252(+0) |   16(+0) |        28(+0) |
+| [lib]\stdc++.a           |         1(+0) |    0(+0) |         0(+0) |
+| lib\MQTT                 |      1832(+0) |    0(+0) |         4(+0) |
+| mbed-os\components       |       384(+0) |    0(+0) |         0(+0) |
+| mbed-os\drivers          |      3373(+0) |    0(+0) |      2020(+0) |
+| mbed-os\events           |      1660(+0) |    0(+0) |      3108(+0) |
+| mbed-os\features         |    58133(-30) |  167(+0) |     23643(+0) |
+| mbed-os\hal              |      2129(+0) |    4(+0) |        66(+0) |
+| mbed-os\platform         |    6535(-653) |  268(+0) |     296(-129) |
+| mbed-os\rtos             |     12407(+0) |  168(+0) |      5981(+0) |
+| mbed-os\targets          |    20982(-78) |    5(+0) |       801(+0) |
+| src\cp_civ_calculation   |       0(-956) |    0(+0) |     0(-32004) |
+| src\data_gathering_tools |       0(-210) |    0(+0) |         0(-4) |
+| src\device_id            |       0(-197) |    0(+0) |         0(+0) |
+| src\helpers              |        44(+0) |    0(+0) |         0(+0) |
+| src\mailbox.o            |       539(+0) |    4(+0) |       100(+0) |
+| src\main.o               |    5077(-261) |  101(+0) | 38979(+12877) |
+| src\measure_fsm          |    1023(-293) |   21(+0) |    76(-48082) |
+| src\message_callbacks    |    1316(-141) |    4(+4) |         0(+0) |
+| src\ota                  |      1063(+0) |    4(+0) |      4604(+0) |
+| src\polynomial_fitting   |      0(-1496) |    0(+0) |         0(+0) |
+| src\reader               |       512(+0) |    4(+0) |       190(+0) |
+| src\resonator            |       680(+0) |    4(+0) |       220(+0) |
+| src\savgol_filter        |       0(-898) |    0(+0) |         0(+0) |
+| src\software_control     |       24(-83) |    1(+0) |         0(+0) |
+| src\watchdogs            |        0(-40) |    0(+0) |        0(-12) |
+| Subtotals                | 151968(-4561) | 3272(+8) | 80296(-67376) |
+Total Static RAM memory (data + bss): 83568(-67368) bytes
+Total Flash memory (text + data): 155240(-4553) bytes
+
+
+19.05.2022
+	tr_info("Send data");
+	for (size_t i = 0; i < 40; i++)
+	{
+		tr_info("magnitude 0x%x, phase 0x%x", magnitude[i], phase[i]);
+	}
+	tr_info("End data send\n");
+	
+	
+20.05.2022
+
+	BANK 2 Sector 12 [0x0810 0000 - 0x0810 3FFF]
+	
+	
+24.05.2022
+
+// return
+int find_Peak_Mag_and_Freq();
+// pass static
+	
+	// possibly modify
+	filtered_data_find_near_peak();
+	// pass pointer
+
+		//possibly modify
+		filtered_data_max_hessian();
+		
+31.05.2022
+| Module                   |         .text |    .data |       .bss |
+|--------------------------|---------------|----------|------------|
+| [fill]                   |      364(+20) |   25(+0) |    109(+0) |
+| [lib]\c.a                |     29499(+0) | 2472(+0) |     89(+0) |
+| [lib]\gcc.a              |      3392(+0) |    0(+0) |      0(+0) |
+| [lib]\misc               |       252(+0) |   16(+0) |     28(+0) |
+| [lib]\stdc++.a           |         1(+0) |    0(+0) |      0(+0) |
+| lib\MQTT                 |      1832(+0) |    0(+0) |      4(+0) |
+| mbed-os\components       |       384(+0) |    0(+0) |      0(+0) |
+| mbed-os\drivers          |      3373(+0) |    0(+0) |   2020(+0) |
+| mbed-os\events           |      1660(+0) |    0(+0) |   3108(+0) |
+| mbed-os\features         |     58163(+0) |  167(+0) |  23643(+0) |
+| mbed-os\hal              |      2129(+0) |    4(+0) |     66(+0) |
+| mbed-os\platform         |      7188(+0) |  268(+0) |    425(+0) |
+| mbed-os\rtos             |     12407(+0) |  168(+0) |   5981(+0) |
+| mbed-os\targets          |     21060(+0) |    5(+0) |    801(+0) |
+| src\cp_civ_calculation   |    1588(+616) |    0(+0) |      0(+0) |
+| src\data_gathering_tools |       128(+0) |    0(+0) |      4(+0) |
+| src\device_id            |       197(+0) |    0(+0) |      0(+0) |
+| src\helpers              |        44(+0) |    0(+0) |      0(+0) |
+| src\mailbox.o            |       539(+0) |    4(+0) |    100(+0) |
+| src\main.o               |      5337(+0) |  101(+0) |  26102(+0) |
+| src\measure_fsm          |      1156(+0) |   21(+0) |  48110(+0) |
+| src\message_callbacks    |      1457(+0) |    0(+0) |      0(+0) |
+| src\ota                  |      1063(+0) |    4(+0) |   4604(+0) |
+| src\polynomial_fitting   |   2640(+1144) |    0(+0) |      0(+0) |
+| src\reader               |       512(+0) |    4(+0) |    190(+0) |
+| src\resonator            |       680(+0) |    4(+0) |    220(+0) |
+| src\savgol_filter        |   2428(+1596) |    0(+0) |  32008(+8) |
+| src\software_control     |        24(+0) |    1(+0) |      0(+0) |
+| src\watchdogs            |        40(+0) |    0(+0) |     12(+0) |
+| Subtotals                | 159537(+3376) | 3264(+0) | 147624(+8) |
+Total Static RAM memory (data + bss): 150888(+8) bytes
+Total Flash memory (text + data): 162801(+3376) bytes
+
+03.06.2022
+
+double maximum value or printf size
+	%[flags][width][.precision][length]specifier
+	%10.10LF
+	
+1.
+1: calculate: Z1 = 48816.521478, Z2 = 49960.357329, Z3 = 1143.835851, T1 = 33.593889, T2 = 66.306650, T3 = 122.712761
+1: reference: Z1 = 48599.570000, Z2 = 50005.260000, Z3 = 1405.680000, T1 = 39.628100, T2 = 63.788500, T3 = 114.160400
+	
+2.
+1: calculate: Z1 = 48586.457242, Z2 = 49950.342476, Z3 = 1363.885234, T1 = 33.593889, T2 = 66.306650, T3 = 122.712761
+1: reference: Z1 = 48599.570000, Z2 = 50005.260000, Z3 = 1405.680000, T1 = 39.628100, T2 = 63.788500, T3 = 114.160400
+
+3.
+1: calculate: Z1 = 48586.457243, Z2 = 49950.342478, Z3 = 1363.885235, T1 = 33.593889, T2 = 66.306650, T3 = 122.712761
+1: reference: Z1 = 48599.570000, Z2 = 50005.260000, Z3 = 1405.680000, T1 = 39.628100, T2 = 63.788500, T3 = 114.160400
+
+
+09.06.2022
+
+	virheestä toipuminen.
+	kaikki puskurit samaan paikkaan.
+	
+	docker exec -it 3dd50044e688 bash
+	
+	
+15.06.2022
+
+Compile [ 99.9%]: message_callbacks.cpp
+[Warning] mbed_trace.h@133,90: too many arguments for format [-Wformat-extra-args]
+
+
+27.06.2022
+
+	mbed_trace_config_set(TRACE_ACTIVE_LEVEL_INFO);
+	mbed_trace_config_set(TRACE_ACTIVE_LEVEL_ALL);
+
+28.06.2022
+
+	Connecting to main_data->mqtt.url192.168.14.102:1883
+ 
+ 
+29.06.2022
+
+CP = resonanssikuopan pohja [kHz]
+CIV = kuopanleveys          [kHz]
+
+Palauta -1 virheen sattuessa cp, civ, ja vaihe.
+
+Tulevia tehtäviä, joista kaipaisimme kommentteja:
+
+1.	Kaikki datapuskurit samaan paikkaan, jossa ne luodaan dynaamisesti ja tuhotaan FW-päivityksen sitä vaatiessa.
+Näitä on nyt staattisesti sovelluksessa esimerkiksi: magnitudi, vaihe, taajuus, savgol-suodatettu taajuus ja sen Hessian, jotka ovat kaikki 4000 pitkiä.
+
+2.	Taajuuspuskurin poistaminen sovelluksesta. Tämä tuli esille, kun puhuin Antin kanssa; Vaihelaskentamoduuli tarvitsee taajuuden tasaväleillä.
+Olisi siis sama käyttää taajuuden alkuarvoa ja askelta laskennassa ajonaikana ja säästää yksi 4000-alkioinen puskuri muistia.
+
+"Mikä on vakaa versio ja tehdä master siitä" Teemu 13:46
+
+CPU- ja RAM-käyttö
+main() rivi 334 register message reboot analysis
+previous 5 - 10 reset flag values
+
+"ois kiva" säännöllisyys data
+Laitteen timestamp register message
+
+Elokuussa kunnon suunnitelma, että olisi kunnon tietoa/arviota jatkumosta.
+Muutamia kuukausia(elokuusta alkaen) / maksimissaan ensi syksy.
+
+Tällainen epäselvä vastaus.
+
+30.06.2022
+
+	0x8 000 000 - 0x8 020 800 = 020 800
+		= 133 120 decimal
+		
+		Watchdog freq. 		 = 32 kHz
+        Prescaler: Min_Value = 4 and Max_Value = 256
+        Reload: Min_Data 	 = 0 and Max_Data  = 4095 (0x0FFF)
+        TimeOut in seconds   = (Reload * Prescaler) / Freq.
+        MinTimeOut 			 = (4 * 1) / 32000 	    = 0.000125 seconds (125 microseconds)
+        MaxTimeOut 			 = (256 * 4096) / 32000 = 32.768   seconds
+		
+01.07.2022
+
+System Reset
+	Sets all registers to their reset values except the reset flags in the clock controller CSR register and 
+	the registers in the Backup domain.
+	
+	A system reset is generated when one of the following events occurs:
+		1. A low level on the NRST pin
+		2. Window watchdog end of count condition
+		3. Independent watchdog end of count condition
+		4. A software reset
+		5. Low-power management reset
+
+Power Reset
+
+
+Backup domain Reset
+
+25.07.2022
+
+Overflow counter. See at the initialization if the value is uint32_t_MAX. This is the case after programming.
+	if value is 0xff
+		value = 0
+		ovf counter + 1
+		
+29.07.2022
+
+	Mailbox:
+		the use of ack is irregular. This should be unified through out the software.
+		
+	Done: Palauta -1 virheen sattuessa cp, civ, ja vaihe.
+	
+	Laitteen timestamp register message
+	
+01.08.2022
+	
+	FLASH write id after id until end of sector, then count the id amounts, erase and start over.
+
+	2 h palaveri W/ Vulli
+	Minkä kokonen (byte-byte)?
+		Byte, half-word, word and double word write Reference manual 76/1751
+		stm32f4xx_hal_flash.c -vaikuttaisi vahvasti siltä, että tavu ohjelmointi on ok.
+		
+	Ring-buffer, lopetus ja pyyhkiminen??
+	Total-count kysymys?
+	| Total-count (erase count) 4 Byte | ... | n*boot reason |
+	Laske watchdog-timer käynnistykset?
+
+	
+X	- enum poista liputus
+	- debug event vielä varmuudeks
+	
+	- Nippu binäärejä: testaa mitä ne tekee.
+	- Tarvittais LabUi kurssi Nikolta (Mqtt käskyt komentoriviltä).
+
+04.08.2022
+
+	Viime palaveri keskiviikkona 29.06. (5 viikkoa sitten)
+	
+	Onboard-laskenta palauttaa -1 virheen sattuessa
+	Build info -> Tulostus telemetria
+	
+	Aika-analyysi. CPU-stats.
+	Sleep, Event ja idle muokkaus
+	Measurement jitter. Ajastaa tarkasti 2 sekuntia. Tämä 2 s on tärkeä.
+	Reset flag bootloader muokkaukset -> Total count isoin prioriteetti.
+	Flash-kirjoitus/puskuri kesken
+
+	Onboard-laskenta voidaan toteuttaa 20-kertaa nopeammin floateilla. Python ei määrittele double/float
+	Yksikkötestit menevät läpi
+	Kuinka todentaa ns täydellisesti?
+	
+	
+	Tallennetaanko kaikkien reset syiden lukumäärä?
+	
+	1. Azure artefactit: ip osoitteet. Dhcp antaa ip osoitteen. Mqtt rekisteröinti viestit ei tule lävitse.
+	2. Ota update script. Win11 fail, Win10 success. 
+	
+	Onboard laskentaan binääri -Vulli
+	LabUI -tutorial Nikolta
+
+08.08.2022
+
+	Flash-moduulin yksikkötestaus?
+X	GIT_REV to mqtt msg?
+	
+	__restrict__ -keyword
+X	resonator- and reader.cpp optimization
+	
+10.08.
+
+	Paho vastaanottavassa päässä?
+	
+11.08.
+
+	Telemetry v0
+		Uudelleen kirjoitettu.
+		Testit - Kyllä
+	GIT_REV -> register message
+X	ensimmäinen arvo -bugi
+X	Mittauksen syklisyys -> "mailbox_frequency"-viestiin
+	(resonator / reader optimization)
+	
+	Looppi-viive 50 us	-> 4000 * 2 * 50 us = 400 ms
+	
+	LabUI -> Niko saa molemmat raaka- ja laskettu-data
+	-> Helppoa keinoa tarkastella emc-säteilyä.
+		Polyfit sovitteeseen keskihajonnan neliö kahdesta paikkaa ja summa.
+		
+	2 s syklisyys. -> unohdetaa.
+	Modaukset läpi.
+		Telemetry what is done
+		siivoo omiks ticketeiks muut.
+		Raahaa sprinttiin mitä on tekeillä.
+		
+	Branchien siivous.
+	
+	TODO:
+		1. Reset reason verification. Unittest.
+		compine binary python
+		stm
+		
+	Sovelluksen kaikki virheet. Virhe taulukko.
+	
+16.08.2022
+
+	EMC-algo ja vasemman hartian taso(joka kymmenes esim.) (cp arvoja phase shift)
+	Häiriöden tunnistamiseen.
+	Polyfit - finding the least square polynomial fit. 
+		This means finding the best fitting curve to a given set of points by minimizing the sum of squares.
+		It takes 3 different inputs from the user, namely X, Y, and the polynomial degree.
+	Numpy.polyfit - residuals (OLS (ordinary least square)) Residual is the sum of squared residuals of the least square fit.
+
+	Hälytys jäännös-lukuarvo
+	Cp arvosta emc-häiriö (polyfit residual)
+	
+	Niko tekee Pythonilla esimerkin EMC-algoritmistä, jonka pohjalta implementoidaan Firmikseen.
+	Myöhemmin lisätään myös vasemman hartian vaimenemiseen tunnistus
+	
+	"Vasemman hartian paikkaa"
+	
+22.08.2022
+	
+	client yield and is connected
+	
+	MQTT broker closed at init: yield: -1, isConn = false.
+	MQTT broker closed at init and started: yield: -1, isConn = false. Doesn't connect or restart.
+
+	MQTT broker running at init: yield: -1, isConn = true.
+	MQTT broker running at init and closed: yield: 0, isConn = false.
+	MQTT broker running at init and closed and started: yield: 0, isConn = false. Doesn't connect or restart.
+
+	sendornot
+	send_rawdata = static_cast<int16_t>(sendornot);
+	
+24.08.2022
+	
+	Collo-weekly:
+	-Unittests finalized
+	-Bug fixes: deviceid extra chars, frequency step type casting, 
+				debugging send raw data functionality by mqtt commands, 
+				trying to get LabUi to work.
+	-Started on the implementation of residual calculation.
+	
+	-Azuret testattu 4 binääriä. Kunnossa ja mittaa.
+	-On-board laskennan virheet hyvissä rajoissa.
+	
+	Next: idle-task and heap/stact information to register message.
+	Then calibration.
+	
+	
+25.08.2022
+	Kalibrointivakio tuonne:
+	System info     0x0810 0000	[2 0000] (131 072 B)    Sectors 12 - 16
+					0x0811 FFFF
+
+30.08.2022
+
+	Kysymys Collolle: tulostetaanko myös kaikkien osatehtävien pino-tiedot? *Ei
+	
+	Remove timer wrappers
+	Measurement loop jitter in send raw version *vain onboard calculation versiossa.
+	
+01.09.2022
+
+	Collo-weekly
+	
+	Versionhallinnan siivousta.
+	
+	Residual odottaa yksikkötestidataa!
+	* Lähetä Nikolle nykyiset yksikkötestidata.
+		Vulli: ci/cd putkeen yksikkötestit.
+
+	Heap ja stack tiedot register-messageen.
+	
+	Kalibrointivakiot Flash-muistiin.
+	
+	Flash yksikkötestaus järkevämmäksi tulevaa varten.
+	
+06.09.2022
+
+  EXPECT_DOUBLE_EQ(sha.sha_a, static_cast<double>(0xffffffffffffffff));
+  printf("static_cast<double>(0xffffffffffffffff) = %lf\n", static_cast<double>(0xffffffffffffffff));
+  printf("sha.sha_a = %a\n", sha.sha_a);
+  printf("sha.sha_a = %lf\n", sha.sha_a);
+
+	static_cast<double>(0xffffffffffffffff) = 18446744073709551616.000000
+	sha.sha_a = 0x1p+64
+	sha.sha_a = 18446744073709551616.000000
+
+static_cast<double>(0xffffffffffffffff)
+= 18446744073709551616.000000
+= 0x1999 9999 9999 9999
+= 1 1001 1001 1001 1001 1001 1001 1001 1001 1001 1001 1001 1001 1001 1001 1001
+
+08.09.2022
+
+	Collo-weekly
+	
+	One Flash-mockup done
+	Telemetry unit test modification done
+	Calibration consts unittest needs tolerances for constants = ei ole tällä hetkellä hajua.
+		Lämpötilamittaus == -100 -- +100 Celsius
+	New reference data modification
+	CP CIV unittest needs tolerance for residual = lähetä datat Nikolle.
+		Residual hälytys
+	
+	ongoing calculate_phase unittest mod for big data.
+	
+	set-84 to 91 fails = kirjoita -1 ja residual ulos
+		Tarkasta CP_CIV laskennan virheestä toipuminen
+	
+	savgol-filter testataan vain yhtä datasettiä vastaan. = Ei ole referenssi filter ja hessian arvoja
+
+X	1. Lähetä residualit Collolle.
+X	2. Tsekkaa virheenkäsittely = residual aina pihalle.
+	3. Tsekkaaa mihin 89 - 91 kosahtaa. --> Firmware ei saa kiinni missä virhe on  --> Doubleilla laskeminen tuottaa saman tuloksen
+X	4. Calibration doublet != NaN
+X	5. Run unit tests in Azure CI/CD
+X	6. Merge branches to development
+	7. Stable --> jatka development-haaran testaamisella raudalla. Tee release candidate tag tms.
+
+	8. Calibration constants from Firmware via MQTT-protocol
+	9. Calibration constants to Firmware via MQTT-protocol
+   10. cp_civ laskennan virhe Antin kommentit
+		1. Jos sovitusta ei ole tehty, on vaikea palauttaa residuaalia.
+		2. Jos max_hessian_position feilaa vasempaan reunaan, niin sovittaa sen polynomin sinne vasemman reunan validiin dataan?
+		3. Se polynomi luultavasti sopii ihan hyvin siihen dataan, niin että se residuaali tuskin on kovin iso.
+		   Aika sileää tuo data on joka paikassa, niin kovin kummoisia residuaaleja sieltä ei jää.
+
+   
+	Onboard laskennan todentaminen kesken Collon päässä.
+	
+09.09.2022
+	Alien Classic cams 3 kpl. 49,45 € / kpl
+	
+	                                                                                                    
+	[INFO][boot]: -----> Starting the application at address: 0x08020800                                
+	constants.sha_a = NaN                                                                               
+	constants.sha_b = NaN                                                                               
+	constants.sha_c = NaN                                                                               
+	NaN-check works on firmware
+
+14.09.2022
+
+	1. Timer-event to check client.yield and client.isConnected. Client.yield set the time how often this must happen.
+	2. Timer-event to send register message. Every 75 seconds
+	3. Event for new mail in mailbox. Roughly at the rate of 1.5 seconds
+	*** Thread can sleep the time between these events. No need for "inifinitely" running in loop ***
+	4. Tulevaisuus: varaudu mod-bus käsittelyyn.
+
+	Main-loop:
+	while (software_control::status()) {
+		
+		// Sleep and wait for events
+		wait_for_events(timer-client_yield&connected || timer-send-register_msg || event-new-mail, "forever");
+
+		switch case (event)
+		{
+			timer-client_yield&connected:
+			{
+			}
+			
+			timer-send-register_msg:
+			{
+			}
+			
+			event-new-mail:
+			{
+			}
+		}
+	}
+	
+	
+15.09.2022
+
+float size_float = 0xdead;
+double size_double = 0xdeadbeef;
+printf("size of float = %lu, size of double = %lu\n", sizeof(size_float), sizeof(size_double));
+printf("max float = %lf, min float = %lf\n", __FLT_MAX__, __FLT_MIN__);
+printf("max double  = %lf, min double = %lf\n", __DBL_MAX__, __DBL_MIN__);
+
+HW:
+size of float = 4, size of double = 8                                           
+max float = 340282346638528859811704183484516925440.000000, min float = 0.000000
+max double  = 179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.000000, min double = 0.000000
+Gtest:
+size of float = 4, size of double = 8
+max float = 340282346638528859811704183484516925440.000000, min float = 0.000000
+max double  = 179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.000000, min double = 0.000000
+
+21.09.2022
+	
+typedef void(*FuncPtr)();
+FuncPtr FuncPtrArray[] = {
+	start(),
+	stop(),
+	measure(),
+	// and so on
+};	
+
+void message_callbacks_trigger(MQTT::MessageData &md)
+{
+    MQTT::Message &message = md.message;
+    uint8_t *first_byte = static_cast<uint8_t*>(message.payload);
+    void (*FuncPtr)();
+	FuncPtr = FuncPtrArray[*first_byte];
+	FuncPtr();
+}
+
+22.09.2022
+
+	Collo-weekly
+	
+	Uusi referenssi data residuaalin laskentaan ja residuaalille toleranssi 1e-5 / 2.
+	Calculate_phase Yksikkötestit muokattu käyttämään uutta datasettiä.
+	CP_CIV laskennan virheestä toipuminen. Residual aina pihalle.
+	Calibration doublet != NaN
+	Run all unit tests in Azure CI/CD -scripti
+	Merge branches to development:	Stable --> testattava
+
+	Mihin 89 - 91 kosahtaa. --> Firmware ei saa kiinni missä virhe on --> Ei hajua.
+
+	Meneillään:
+	Calibration constants to Firmware via MQTT-protocol.
+		Tarvii jonkun tehokkaan tavan lähettää MQTT-viestejä raudalle. Ajattelin katsoa mallia Pythonilla tehdyistä testeistä.
+
+    cp_civ laskennan virhe Antin kommentit:
+		(1. Jos sovitusta ei ole tehty, on vaikea palauttaa residuaalia.)
+		 2. Jos max_hessian_position feilaa vasempaan reunaan, niin sovittaa sen polynomin sinne vasemman reunan validiin dataan?
+		(3. Se polynomi luultavasti sopii ihan hyvin siihen dataan, niin että se residuaali tuskin on kovin iso.
+		    Aika sileää tuo data on joka paikassa, niin kovin kummoisia residuaaleja sieltä ei jää.)
+   
+	Mainissa oleva luuppi uusiks?
+	Onboard laskennan todentaminen kesken Collon päässä.
+
+	TODO: Teams wiki ajantasalle.
+	TODO: CP virhe ym. koodattu -1, -2, -3
+	TODO: OTA-bugi?
+	TODO: set calibration message packed?
+	
+28.9.2022
+iiuxvqf2x5c4xflxjiwbyuql73tmz76ugqbnkzydi6m6uiemsgya
+
+29.09.2022
+
+    uint8_t* temp_ptr = first_byte;
+	tr_debug("Payload:");
+	for (size_t i = 0; i < 24; i++) {
+		printf("0x%02x ", *(temp_ptr++));
+	}
+	printf("\n");
+ 
+	Collo-weekly
+
+	Wikin päivitystä. Kesken kalibrointivakioiden osalta.
+	Python skripti /calibration/ -topikin kuuntelememista varten.
+	Debuggausta.
+	Python skripti kalibrointivakioiden lähettämiseksi.
+	
+	CP_CIV laskennan virheestä toipuminen. Residual aina pihalle.
+	Merge branches to development:	Stable --> testattavana. Onboard laskennan todentaminen kesken Collon päässä.
+	(Mihin 89 - 91 kosahtaa. --> Firmware ei saa kiinni missä virhe on --> Ei hajua.)
+
+	Meneillään:
+	Calibration constants to Firmware via MQTT-protocol.
+		Tarvii jonkun tehokkaan tavan lähettää MQTT-viestejä raudalle. Tehty pythonilla työkaluja.
+   
+	Mainissa oleva luuppi uusiks?
+
+	TODO: Teams wiki ajantasalle. Kesken.
+	TODO: CP virhe ym. koodattu -1, -2, -3. Kesken. WIKIIN!
+
+	Teemu: Toistaiseks ei ole saanut samaa bugia toistumaan.
+	done: find 3db muokkaa sillai että palauttaa jos +3db ei löydy.
+
+30.09.2022
+
+	A call to this API must be made within the keepAlive interval to keep the MQTT connection alive
+    yield can be called if no other MQTT operation is needed.
+	This will also allow messages to be received.
+    @param timeout_ms the time to wait, in milliseconds
+    @return success code - on failure, this means the client has disconnected
+    int yield(unsigned long timeout_ms = 1000L);
+
+	isconnected = false <-- closeSession
+	
+03.10.2022
+
+    uint32_t rcc_register_content = RCC->CSR;
+    tr_debug("RCC->CSR = 0x%08lx", rcc_register_content);
+
+	HUOMIO: Kuinka onboard laskenta mukautuu jos taulukon kokoa muutetaan?
+	
+04.10.2022
+
+	Päivitä wiki: firmware memory map
+	
+05.10.2022
+
+	HUOMIO: Missä tilanteessa Bootloader päivittyy? Ei ainakaan OTA?
+			Jos mittaus pysäytetään liipaiseeko wdt resetin?
+			
+06.10.2022
+
+	Collo-weekly:
+	CP laskenta ottaa väärän kuopanarvon hessianin perusteella. (kaks kertaa savgol ajo).
+	Vain Raakadata-moodi selkeesti hidas (5 sekuntia). Uusin firmis.
+	Kuinka onboard laskenta mukautuu jos taulukon kokoa muutetaan?
+		Yläraja 4000. WIKI.
+		TODO: Laskennan pitää mukautua sweep_amount muuttujaan.
+			
+	Missä tilanteessa Bootloader päivittyy? Ei ainakaan OTA?
+	-Jos mittaus pysäytetään liipaiseeko wdt resetin?
+	Teams wiki ajantasalle. Kesken.
+	CP virhe ym. koodattu -1, -2, -3. Kesken.
+	
+	EMC-testeissä vaatimus ei saisi millään häiriölähteellä normaalitoiminta poiketa.
+		Savgol-filtterin vaihdos (ehkä joskus, mutta mahdollinen, mutta ehkä).
+	
+	Tulevaisuus: stabiiliversio. Jonkinlaiseen päätökseen kuukauden-kahden sisään.
+		Isompi seuraava: kalibrointivakioiden.
+
+11.10.2020
+	
+[INFO][mfsm]: SEND_RAW t = 2.556196 s 
+[INFO][mfsm]: WAIT + PREPARE + MEASURE_PTR t = 1.498431 s 
+
+12.12.2022
+ 
+deviceid:
+[INFO][MFSM]: WAIT + PREPARE + MEASURE_PTR t = 1.455762 s                                                                     
+[INFO][MFSM]: SEND_RAW:                                                                                                       
+[INFO][MFSM]: SEND_RAW t = 0.000028 s    
+
+[INFO][MFSM]: Jitter [us]    = 1.453647                                                                                       
+[INFO][main]: Topic to send: /data/1a00
+
+13.10.2022
+	09:15 -
+	
+	Collo-weekly:
+		5 s päivitys: lähetetty testattavaksi.
+		0.18 versio testissä mbed-os error setsysclock failed: vaikea löytää tietoa.
+		Binaarit: bootloader päivittää tyhjää jossain tilanteessa "Reload firmware"
+		OTA-testi loop: send ack to the measurement loop in case it is waiting it on FW-update. Works nicely.
+		Trigger send raw continuous -testaa aika ja toiminta. Testattu
+		Kuinka onboard laskenta mukautuu jos taulukon kokoa muutetaan?
+			Yläraja 4000. WIKI.
+			TODO: Laskennan pitää mukautua sweep_amount muuttujaan.
+
+14.10.2022
+	08:55
+	
+	Kuinka onboard laskenta mukautuu jos taulukon kokoa muutetaan?
+		Done: Yläraja 4000. WIKI.
+		Done: Untested: TODO: Laskennan pitää mukautua sweep_amount muuttujaan.
+	
+18.10.2022
+	09:00-->
+		Done: Trigger send raw continuous -testaa aika ja toiminta. 2.1 sek / 1.73 sek
