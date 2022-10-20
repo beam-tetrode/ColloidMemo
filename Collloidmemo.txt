@@ -551,8 +551,7 @@ X	6. Merge branches to development
 	
 09.09.2022
 	Alien Classic cams 3 kpl. 49,45 € / kpl
-	
-	                                                                                                    
+
 	[INFO][boot]: -----> Starting the application at address: 0x08020800                                
 	constants.sha_a = NaN                                                                               
 	constants.sha_b = NaN                                                                               
@@ -768,12 +767,31 @@ deviceid:
 			TODO: Laskennan pitää mukautua sweep_amount muuttujaan.
 
 14.10.2022
-	08:55
-	
+
 	Kuinka onboard laskenta mukautuu jos taulukon kokoa muutetaan?
 		Done: Yläraja 4000. WIKI.
 		Done: Untested: TODO: Laskennan pitää mukautua sweep_amount muuttujaan.
 	
 18.10.2022
-	09:00-->
-		Done: Trigger send raw continuous -testaa aika ja toiminta. 2.1 sek / 1.73 sek
+
+	Done: Trigger send raw continuous -testaa aika ja toiminta. 2.1 sek / 1.73 sek
+
+19.10.2022
+	
+	1. Päivitä wiki: firmware memory map
+	2. Jos mittaus pysäytetään liipaiseeko wdt resetin?
+	3. Bootloader päivittää tyhjää jossain tilanteessa "Reload firmware"?
+
+
+20.10.2022
+
+	09:30-->
+
+	Collo-weekly:
+		5 s bug testattavana viikon.
+		0.18 versio testissä mbed-os error setsysclock failed: vaikea löytää tietoa. Tietääkö Vulli?
+		OTA-testi loop
+		Trigger send raw continuously: 2.1 sek / -without: 1.73 sek
+		Onboard laskenta mukautuu kun taulukon kokoa muutetaan:
+			Yläraja 5000. WIKISSÄ
+		Wikiä päivitetty
